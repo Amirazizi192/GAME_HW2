@@ -12,12 +12,14 @@ public class BatmobileMovement : MonoBehaviour
     private Rigidbody2D rb;            // Rigidbody for physics-based movement
     private float currentSpeed;        // Current speed (normal or boost)
     private Camera mainCamera;          // Main camera reference for bounds
+    private BatmanStateController stateController; // Reference to BatmanStateController
 
     void Start()
     {
         // Get required components at start
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
+        stateController = GetComponent<BatmanStateController>();   // Get BatmanStateController component
     }
 
     void Update()
@@ -31,25 +33,35 @@ public class BatmobileMovement : MonoBehaviour
 
     void HandleMovement()
     {
-        // Forward and backward movement (W / S)
+        // Forward and backward input
         float forwardInput = Input.GetAxis("Vertical");
 
-        // Side movement (A / D)
+        // Side movement input
         float sideInput = 0f;
         if (Input.GetKey(KeyCode.A)) sideInput = -1f;
         if (Input.GetKey(KeyCode.D)) sideInput = 1f;
 
         // Check if boost key is pressed
         bool isBoosting = Input.GetKey(KeyCode.LeftShift);
-        currentSpeed = isBoosting ? boostSpeed : normalSpeed;
 
-        // Calculate movement directions
+        // Set current speed based on state
+        if (stateController != null && stateController.currentState == BatmanStateController.BatmanState.Stealth)
+        {
+            currentSpeed = normalSpeed * 0.2f;  // Stealth is very slow
+        }
+        else
+        {
+            currentSpeed = isBoosting ? boostSpeed : normalSpeed;
+        }
+
+        // Calculate movement vectors
         Vector2 forwardMove = transform.up * forwardInput * currentSpeed;
         Vector2 sideMove = transform.right * sideInput * currentSpeed;
 
-        // Apply final velocity to the Rigidbody
+        // Apply final velocity
         rb.linearVelocity = forwardMove + sideMove;
     }
+
 
     void ClampPosition()
     {
