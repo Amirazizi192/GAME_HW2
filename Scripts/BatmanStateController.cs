@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class BatmanStateController : MonoBehaviour
 {
+    public AlertController alertController; 
     public enum BatmanState
     {
         Normal,
@@ -28,23 +29,28 @@ public class BatmanStateController : MonoBehaviour
             SetState(BatmanState.Normal);    
     }
 
-    void SetState(BatmanState newState)
+void SetState(BatmanState newState)
+{
+    currentState = newState;
+
+    // فعال/غیرفعال کردن AlertController
+    if (alertController != null)
+        alertController.SetAlert(currentState == BatmanState.Alert);
+
+    switch (currentState)
     {
-        currentState = newState;
+        case BatmanState.Normal:
+            Debug.Log("Normal Mode");
+            break;
 
-        switch (currentState)
-        {
-            case BatmanState.Normal:
-                Debug.Log("Normal Mode");
-                break;
+        case BatmanState.Stealth:
+            Debug.Log("Stealth Mode");
+            break;
 
-            case BatmanState.Stealth:
-                Debug.Log("Stealth Mode");
-                break;
-
-            case BatmanState.Alert:
-                Debug.Log("Alert Mode");
-                break;
-        }
+        case BatmanState.Alert:
+            Debug.Log("Alert Mode");
+            break;
     }
+}
+
 }
