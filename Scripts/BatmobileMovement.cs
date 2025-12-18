@@ -2,83 +2,106 @@ using UnityEngine;
 
 public class BatmobileMovement : MonoBehaviour
 {
-    // -------------------- Movement Settings --------------------
-    [Header("Movement")]
-    public float normalSpeed = 5f;     // Speed in normal movement
-    public float boostSpeed = 12f;     // Speed while holding Shift (boost)
+    // -------------------- تنظیمات حرکت --------------------
+    [Header("حرکت")]
+    /// <summary>
+    /// سرعت حرکت عادی ماشین.
+    /// </summary>
+    public float normalSpeed = 5f;
 
-    // -------------------- References --------------------
-    [Header("References")]
-    private Rigidbody2D rb;            // Rigidbody for physics-based movement
-    private float currentSpeed;        // Current speed (normal or boost)
-    private Camera mainCamera;          // Main camera reference for bounds
-    private BatmanStateController stateController; // Reference to BatmanStateController
+    /// <summary>
+    /// سرعت حرکت هنگام فشار دادن کلید Shift (دویدن/بوست).
+    /// </summary>
+    public float boostSpeed = 12f;
+
+    // -------------------- مراجع به اجزا --------------------
+    [Header("مراجع")]
+    /// <summary>
+    /// Rigidbody2D برای حرکت فیزیکی ماشین.
+    /// </summary>
+    private Rigidbody2D rb;
+
+    /// <summary>
+    /// سرعت فعلی ماشین (عادی یا بوست یا مخفی‌کاری).
+    /// </summary>
+    private float currentSpeed;
+
+    /// <summary>
+    /// ارجاع به دوربین اصلی برای محدود کردن حرکت ماشین داخل صفحه.
+    /// </summary>
+    private Camera mainCamera;
+
+    /// <summary>
+    /// ارجاع به BatmanStateController برای بررسی حالت فعلی بتمن (Normal / Stealth / Alert).
+    /// </summary>
+    private BatmanStateController stateController;
 
     void Start()
     {
-        // Get required components at start
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
-        stateController = GetComponent<BatmanStateController>();   // Get BatmanStateController component
+        stateController = GetComponent<BatmanStateController>();
     }
 
     void Update()
     {
-        // Handle player movement input
-        HandleMovement();
-
-        // Prevent the batmobile from leaving the screen
-        ClampPosition();
+        HandleMovement(); // پردازش حرکت بازیکن
+        ClampPosition();  // جلوگیری از خارج شدن ماشین از محدوده صفحه
     }
 
+    /// <summary>
+    /// مدیریت حرکت ماشین بر اساس ورودی کاربر و حالت فعلی بتمن.
+    /// </summary>
     void HandleMovement()
     {
-        // Forward and backward input
+        // ورودی حرکت جلو و عقب (W / S)
         float forwardInput = Input.GetAxis("Vertical");
 
-        // Side movement input
+        // ورودی حرکت به چپ و راست (A / D)
         float sideInput = 0f;
         if (Input.GetKey(KeyCode.A)) sideInput = -1f;
         if (Input.GetKey(KeyCode.D)) sideInput = 1f;
 
-        // Check if boost key is pressed
+        // بررسی فشار کلید Shift برای دویدن/بوست
         bool isBoosting = Input.GetKey(KeyCode.LeftShift);
 
-        // Set current speed based on state
+        // تعیین سرعت فعلی بر اساس حالت بتمن
         if (stateController != null && stateController.currentState == BatmanStateController.BatmanState.Stealth)
         {
-            currentSpeed = normalSpeed * 0.2f;  // Stealth is very slow
+            currentSpeed = normalSpeed * 0.2f;  // حالت مخفی‌کاری بسیار کند است
         }
         else
         {
             currentSpeed = isBoosting ? boostSpeed : normalSpeed;
         }
 
-        // Calculate movement vectors
+        // محاسبه بردار حرکت جلو/عقب و چپ/راست
         Vector2 forwardMove = transform.up * forwardInput * currentSpeed;
         Vector2 sideMove = transform.right * sideInput * currentSpeed;
 
-        // Apply final velocity
+        // اعمال سرعت نهایی به Rigidbody
         rb.linearVelocity = forwardMove + sideMove;
     }
 
-
+    /// <summary>
+    /// محدود کردن موقعیت ماشین در داخل محدوده تعریف شده صفحه.
+    /// </summary>
     void ClampPosition()
     {
-        // Get current position
+        // گرفتن موقعیت فعلی
         Vector3 pos = transform.position;
 
-        // Manual screen boundaries (gameplay limits)
+        // مرزهای دستی صفحه (محدوده بازی)
         float minX = -7.0f;
         float maxX =  7.0f;
         float minY = -4.0f;
         float maxY = -1.0f;
 
-        // Clamp position inside defined bounds
+        // محدود کردن موقعیت ماشین داخل مرزها
         pos.x = Mathf.Clamp(pos.x, minX, maxX);
         pos.y = Mathf.Clamp(pos.y, minY, maxY);
 
-        // Apply clamped position
+        // اعمال موقعیت محدود شده
         transform.position = pos;
     }
 }
